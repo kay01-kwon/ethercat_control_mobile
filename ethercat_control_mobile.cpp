@@ -11,19 +11,17 @@
 #include <alchemy/timer.h>
 #include <xenomai/init.h>
 
-
 #include "vehicle_control/motorsMsg.h"
-#include "vehicle_control/testMsg.h"
 #include "soem/ethercat.h"
 #include "pdo_def.h"
 #include "servo_def.h"
 #include "ecat_dc.h"
 
 #define EC_TIMEOUTMON 500
-
 #define NUMOFWHEEL_DRIVE    4
-
 #define NSEC_PER_SEC 1000000000
+
+using vehicle_control::motorsMsg;
 unsigned int cycle_ns = 1000000; // nanosecond
 
 EPOS4_Drive_pt	epos4_drive_pt[NUMOFWHEEL_DRIVE];
@@ -45,7 +43,7 @@ RT_TASK pub_task;
 RTIME now, previous;
 long ethercat_time_send, ethercat_time_read = 0;
 long ethercat_time = 0, worst_time = 0;
-char ecat_ifname[32] = "enxb827eba0807b";
+char ecat_ifname[32] = "enp2s0";
 int run = 1;
 int sys_ready = 0;
 boolean limit_flag = FALSE;
@@ -60,7 +58,7 @@ uint32_t ob;
 uint16_t ob2;
 uint8_t  ob3;
 
-boolean ecat_init(void)//uint32_t mode)
+boolean ecat_init(void)
 {
     int i, oloop, iloop, chk, wkc_count;
     needlf = FALSE;
@@ -241,19 +239,10 @@ void EPOS_OP(void *arg)
 {
     unsigned long ready_cnt = 0;
     uint16_t controlword=0;
-    int p_des = 0, i;
+
+    int i;
     int argc;
     char** argv;
-
-	  vehicle_control::testMsg msg3;
-
-    ros::init(argc, argv, "dualarm_pub2");
-
-    ros::NodeHandle n;
-
-   // ros::Publisher pub2 = n.advertise<vehicle_control::motorsMsg>("measure",1);
-
-    ros::Publisher pub3 = n.advertise<vehicle_control::testMsg>("target_v",1);
 
     if (ecat_init()==FALSE)
     {
@@ -359,10 +348,6 @@ void EPOS_OP(void *arg)
         	
             }
 
-                msg3.omega1 = 0;
-
-         
-                pub3.publish(msg3);
 
         } // sysready
         else
@@ -428,17 +413,13 @@ void pub_run(void *arg)
     int argc;
     char** argv;
     
-    vehicle_control::motorsMsg msg2;
-  //  vehicle_control::motorsMsg msg3;
+    motorsMsg msg2;
 
     ros::init(argc, argv, "dualarm_pub");
 
     ros::NodeHandle n;
 
-    ros::Publisher pub2 = n.advertise<vehicle_control::motorsMsg>("measure",1);
-
-  //  ros::Publisher pub3 = n.advertise<vehicle_control::motorsMsg>("target_v",1);
-
+    ros::Publisher pub2 = n.advertise<motorsMsg>("measure",1);
 
     rt_task_set_periodic(NULL, TM_NOW, 5e6);
 
@@ -466,12 +447,6 @@ void pub_run(void *arg)
 
                 pub2.publish(msg2);
 
-             //   msg3.omega1 = epos4_drive_pt[0].ptOutParam->TargetVelocity;
-              //  msg3.omega2 = epos4_drive_pt[1].ptOutParam->TargetVelocity;
-             //   msg3.omega3 = epos4_drive_pt[2].ptOutParam->TargetVelocity;
-           //     msg3.omega4 = epos4_drive_pt[3].ptOutParam->TargetVelocity;
-
-//		pub3.publish(msg3);
             }
         }
     }
