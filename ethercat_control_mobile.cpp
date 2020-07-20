@@ -16,12 +16,15 @@
 #include "pdo_def.h"
 #include "servo_def.h"
 #include "ecat_dc.h"
+#include "vehicle_control/testMsg.h"
 
 #define EC_TIMEOUTMON 500
 #define NUMOFWHEEL_DRIVE    4
 #define NSEC_PER_SEC 1000000000
 
 using vehicle_control::motorsMsg;
+using vehicle_control::testMsg;
+
 unsigned int cycle_ns = 1000000; // nanosecond
 
 EPOS4_Drive_pt	epos4_drive_pt[NUMOFWHEEL_DRIVE];
@@ -241,9 +244,16 @@ void EPOS_OP(void *arg)
     uint16_t controlword=0;
 
     int i;
+    /*
     int argc;
     char** argv;
+    testMsg sys_diagnosis;
+    testMsg input_diagnosis;
 
+    ros::init(argc,argv,"diagnosis");
+    ros::NodeHandle n_diagnosis;
+    ros::Publisher publisher_input1 = n_diagnosis.advertise<testMsg>("/input1",1);
+    */
     if (ecat_init()==FALSE)
     {
         run = 0;
@@ -359,7 +369,8 @@ void EPOS_OP(void *arg)
             }
         }
 
-
+            //input_diagnosis.omega1 = epos4_drive_pt[0].ptOutParam->TargetVelocity;
+            //publisher_input1.publish(input_diagnosis);
         if (sys_ready)
             if (worst_time<ethercat_time) worst_time=ethercat_time;
 
